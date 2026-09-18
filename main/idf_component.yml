@@ -1,0 +1,11 @@
+# Composants gérés officiels Espressif pour le bus 1-Wire et le DS18B20
+# (RMT-based, remplace l'ancienne lib "owb" dépréciée). Téléchargés
+# automatiquement par idf.py au premier `idf.py build` (nécessite un accès
+# réseau à component-manager sur components.espressif.com à ce moment-là).
+dependencies:
+  idf:
+    version: ">=5.1"
+  espressif/onewire_bus:
+    version: "^1.0"
+  espressif/ds18b20:
+    version: "^0.4.0"

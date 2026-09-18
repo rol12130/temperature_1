@@ -1,0 +1,18 @@
+# Table de partitions volontairement simple : 2 slots OTA standards
+# ESP-IDF (ota_0/ota_1), PAS de partition factory séparée, contrairement à
+# esp32p4-master-banes (qui a un mécanisme de rescue dédié). Ici, la
+# sécurité anti-brick repose uniquement sur le rollback intégré du
+# bootloader ESP-IDF (CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y, voir
+# sdkconfig.defaults) : si le firmware fraîchement flashé par OTA plante
+# avant d'appeler esp_ota_mark_app_valid_cancel_rollback() (voir main.c),
+# le bootloader revient tout seul sur l'ancienne partition ota_x au
+# redémarrage suivant. Pas d'enjeu de contrôle critique sur ce device
+# (capteur de température), donc pas besoin du mécanisme rescue complet
+# du master.
+#
+# Name,     Type, SubType,  Offset,    Size,  Flags
+nvs,        data, nvs,      0x9000,    0x6000,
+otadata,    data, ota,      0xf000,    0x2000,
+phy_init,   data, phy,      0x11000,   0x1000,
+ota_0,      app,  ota_0,    0x20000,   1536K,
+ota_1,      app,  ota_1,    0x1A0000,  1536K,

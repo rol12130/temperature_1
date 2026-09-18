@@ -1,0 +1,25 @@
+idf_component_register(
+    SRCS
+        "main.c"
+        "wifi_init.c"
+        "mqtt_app.c"
+        "json_helper.c"
+        "time_sync.c"
+        "ds18b20_task.c"
+        "ota_app.c"
+    INCLUDE_DIRS
+        "."
+    REQUIRES
+        esp_wifi
+        esp_netif
+        esp_event
+        nvs_flash
+        mqtt
+        app_update
+        esp_https_ota
+        esp_http_client
+        json
+        driver
+        mbedtls
+        esp_partition
+)

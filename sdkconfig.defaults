@@ -1,0 +1,53 @@
+# --- Cible ---
+CONFIG_IDF_TARGET="esp32"
+
+# --- Flash (carte HW-394 / WR-32, module type ESP-WROOM-32, 4 Mo) ---
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="4MB"
+
+# --- Table de partitions custom (2 slots OTA, sans factory — voir partitions.csv) ---
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+CONFIG_PARTITION_TABLE_FILENAME="partitions.csv"
+
+# --- PSRAM ---
+# Le module ESP-WROOM-32 générique de ce type de carte n'a en général PAS
+# de PSRAM (contrairement à l'ESP32-P4 du master, qui en a 32 Mo). Laisser
+# désactivé sauf si tu confirmes une variante -32D/-32E/-32E avec PSRAM.
+# CONFIG_SPIRAM=y
+
+# --- mbedTLS : bundle de certificats racine intégré, nécessaire pour
+#     valider le serveur HTTPS d'OTA sans embarquer de .pem (même choix
+#     que esp32p4-master-banes) ---
+CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y
+CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y
+
+# --- OTA : rollback automatique du bootloader si le nouveau firmware
+#     plante avant confirmation (voir main.c et partitions.csv). C'est
+#     TOUTE la sécurité anti-brick de ce projet — pas de partition factory,
+#     pas de compteur de boot-loop en NVS comme sur le master. ---
+CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y
+
+# Version fixe (au lieu de dépendre de "git describe", absent hors dépôt git).
+CONFIG_APP_PROJECT_VER_FROM_CONFIG=y
+CONFIG_APP_PROJECT_VER="1.0.0"
+
+# --- Valeurs par défaut pour ce device (Banes) ---
+# Remplace CONFIG_MQTT_DEVICE si tu déploies un 2e device DS18B20 sur le
+# même site (chaque device doit avoir un CONFIG_MQTT_DEVICE unique, faute
+# de quoi les deux publieront sur les mêmes topics).
+CONFIG_MQTT_SITE="banes"
+CONFIG_MQTT_DEVICE="esp32-ds18b20-1"
+CONFIG_MQTT_CLIENT_ID_PREFIX="esp32-ds18b20"
+
+# Broker VPS (authentifié) — metrics + commande OTA à distance.
+CONFIG_MQTT_BROKER_URI="mqtt://10.10.0.1:1883"
+# Remplis ton nom d'utilisateur/mot de passe ici (comme dans le
+# sdkconfig.defaults d'esp32p4-master-banes) ou laisse vide et configure-les
+# via `idf.py menuconfig` en local si tu préfères ne pas committer de secret
+# en clair dans ce dépôt.
+CONFIG_MQTT_USERNAME=""
+CONFIG_MQTT_PASSWORD=""
+
+# Broker local du site (esp32p4-broker-banes, 192.168.20.2), sans auth.
+CONFIG_MQTT_LOCAL_BROKER_URI="mqtt://192.168.20.2:1883"

@@ -1,0 +1,149 @@
+menu "Capteur DS18B20 - Configuration app"
+
+    menu "WiFi"
+
+        config WIFI_SSID
+            string "SSID du réseau WiFi"
+            default ""
+            help
+                Laissé vide par défaut à dessein : renseigne-le via
+                `idf.py menuconfig` en local plutôt que de committer ton
+                SSID/mot de passe dans sdkconfig.defaults.
+
+        config WIFI_PASSWORD
+            string "Mot de passe WiFi"
+            default ""
+
+        config WIFI_MAXIMUM_RETRY
+            int "Nombre de tentatives de reconnexion avant abandon temporaire"
+            default 10
+            help
+                Au-delà, le device attend WIFI_RETRY_BACKOFF_MS avant de
+                relancer une série de tentatives (ne redémarre jamais tout
+                seul pour un simple problème WiFi transitoire — seul le
+                timeout initial au boot, voir main.c, provoque un restart).
+
+        config WIFI_RETRY_BACKOFF_MS
+            int "Délai d'attente après une série de tentatives ratées (ms)"
+            default 30000
+
+        config WIFI_CONNECT_TIMEOUT_S
+            int "Délai d'attente d'une IP au démarrage avant redémarrage (s)"
+            default 30
+
+    endmenu
+
+    menu "NTP (horodatage)"
+
+        config NTP_SERVER
+            string "Serveur NTP"
+            default "pool.ntp.org"
+
+        config NTP_SYNC_TIMEOUT_S
+            int "Délai d'attente de synchronisation au démarrage (secondes)"
+            default 10
+            help
+                Si le serveur NTP est injoignable dans ce délai, le device
+                démarre quand même (best-effort) — les timestamps seront
+                faux (proches de 0) jusqu'à une synchro ultérieure.
+
+    endmenu
+
+    menu "DS18B20 (1-Wire)"
+
+        comment "--- CÂBLAGE --- GPIO27 -> DATA (avec pull-up 4.7k vers 3.3V) ---"
+
+        config DS18B20_GPIO
+            int "GPIO du bus 1-Wire"
+            default 27
+            help
+                Un seul GPIO pour 1 ou 2 sondes DS18B20 en parallèle sur le
+                même bus (chaque sonde a une adresse ROM unique en usine,
+                pas besoin d'un GPIO par sonde).
+
+        config DS18B20_MAX_SENSORS
+            int "Nombre max de sondes attendues sur le bus"
+            default 2
+            range 1 8
+
+        config DS18B20_ENABLE_INTERNAL_PULLUP
+            bool "Activer le pull-up interne du GPIO en plus du pull-up externe"
+            default n
+            help
+                Le pull-up externe (4.7k vers 3.3V) reste recommandé dans
+                tous les cas (le pull-up interne du GPIO est faible et pas
+                toujours fiable sur un bus 1-Wire). À activer seulement en
+                dépannage si le câblage externe n'est pas encore en place.
+
+        config DS18B20_POLL_INTERVAL_MS
+            int "Intervalle entre deux publications de température (ms)"
+            default 30000
+
+    endmenu
+
+    menu "MQTT"
+
+        config MQTT_BROKER_URI
+            string "URI du broker MQTT distant (VPS)"
+            default "mqtt://10.10.0.1:1883"
+            help
+                Broker VPS authentifié — reçoit les metrics (dupliquées, voir
+                MQTT_LOCAL_BROKER_URI) ET la commande OTA à distance
+                (commands/<site>/<device>/ota/update), volontairement
+                jamais reçue par le broker local : le déclenchement OTA est
+                une opération de gestion de flotte, pas un contrôle du site.
+
+        config MQTT_CLIENT_ID_PREFIX
+            string "Préfixe de l'identifiant client MQTT"
+            default "esp32-ds18b20"
+            help
+                Le suffixe (6 derniers octets de l'adresse MAC WiFi) est
+                ajouté automatiquement pour garantir un identifiant unique
+                par device.
+
+        config MQTT_USERNAME
+            string "Nom d'utilisateur MQTT (broker VPS)"
+            default ""
+
+        config MQTT_PASSWORD
+            string "Mot de passe MQTT (broker VPS)"
+            default ""
+
+        config MQTT_SITE
+            string "Identifiant du site"
+            default "banes"
+            help
+                Premier niveau après la catégorie dans le plan de topics :
+                metrics/<site>/<device>, logs/<site>/<device>,
+                notifications/<site>/<device>, commands/<site>/<device>
+
+        config MQTT_DEVICE
+            string "Identifiant du device"
+            default "esp32-ds18b20-1"
+            help
+                Deuxième niveau du plan de topics (voir MQTT_SITE
+                ci-dessus). Doit être unique si plusieurs devices DS18B20
+                sont déployés sur le même site.
+
+        comment "Plan de topics : metrics|logs|notifications|commands / site / device / ..."
+
+        config MQTT_LOCAL_BROKER_URI
+            string "URI du broker MQTT LOCAL (site)"
+            default "mqtt://192.168.20.2:1883"
+            help
+                Broker local hébergé sur esp32p4-broker-banes, sans TLS ni
+                authentification par défaut (réseau local de confiance).
+                Ne reçoit que les metrics dupliquées (voir mqtt_app.c) —
+                ce device n'a pas de commande de contrôle local.
+
+        config MQTT_LOCAL_USERNAME
+            string "Nom d'utilisateur MQTT (broker local)"
+            default ""
+
+        config MQTT_LOCAL_PASSWORD
+            string "Mot de passe MQTT (broker local)"
+            default ""
+
+    endmenu
+
+endmenu
