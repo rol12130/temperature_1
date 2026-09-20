@@ -27,9 +27,9 @@ rester homogène avec le reste du projet.
 
 ## Câblage
 
-- **DS18B20 → GPIO27** (configurable, voir `menuconfig` → *Capteur DS18B20 -
+- **DS18B20 → GPIO4** (configurable, voir `menuconfig` → *Capteur DS18B20 -
   Configuration app* → *DS18B20 (1-Wire)*)
-- Résistance de pull-up **4.7 kΩ entre GPIO27 et 3.3V** (recommandé même en
+- Résistance de pull-up **4.7 kΩ entre GPIO4 et 3.3V** (recommandé même en
   usage normal ; le pull-up interne du GPIO, activable via
   `CONFIG_DS18B20_ENABLE_INTERNAL_PULLUP`, est un dépannage, pas une
   solution définitive)

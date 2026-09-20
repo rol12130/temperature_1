@@ -51,3 +51,6 @@ CONFIG_MQTT_PASSWORD=""
 
 # Broker local du site (esp32p4-broker-banes, 192.168.20.2), sans auth.
 CONFIG_MQTT_LOCAL_BROKER_URI="mqtt://192.168.20.2:1883"
+
+# --- Câblage confirmé (test du 2026-09-20) ---
+CONFIG_DS18B20_GPIO=4

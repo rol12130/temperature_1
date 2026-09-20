@@ -51,11 +51,11 @@ menu "Capteur DS18B20 - Configuration app"
 
     menu "DS18B20 (1-Wire)"
 
-        comment "--- CÂBLAGE --- GPIO27 -> DATA (avec pull-up 4.7k vers 3.3V) ---"
+        comment "--- CÂBLAGE --- GPIO4 -> DATA (avec pull-up 4.7k vers 3.3V) ---"
 
         config DS18B20_GPIO
             int "GPIO du bus 1-Wire"
-            default 27
+            default 4
             help
                 Un seul GPIO pour 1 ou 2 sondes DS18B20 en parallèle sur le
                 même bus (chaque sonde a une adresse ROM unique en usine,
