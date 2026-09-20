@@ -76,14 +76,43 @@ Au premier `idf.py build`, le component manager télécharge automatiquement
 
 ## Déclencher une mise à jour OTA
 
-Publier l'URL HTTPS du firmware `.bin` sur le broker VPS (payload brut, pas
-de JSON) :
+Le firmware accepte une URL `http://` ou `https://` (`esp_https_ota()` gère
+les deux selon le schéma de l'URL — voir `ota_app.c`). L'infra existante du
+projet (dépôt [scripts-deploiement](https://github.com/rol12130/scripts-deploiement))
+sert les `.bin` en **HTTP simple** sur le VPS, port `8080` — ça fonctionne
+tel quel, aucune adaptation nécessaire côté firmware.
 
-```
+⚠️ **Ne pas utiliser `deploy.sh`** de ce dépôt : il attend un zip et fait
+`rm -rf` du dossier cible (pas adapté à un clone git existant), et son
+déclenchement automatique publie en dur sur `commands/<site>/<device>/factory_reset`
+— le mécanisme rescue du master, incompatible avec `ota/update` ici.
+`publish.sh`/`generate_manifest.sh`, en revanche, sont génériques et
+réutilisables tels quels.
+
+```bash
+# 1. Build (dans ce dépôt, après avoir bumpé CONFIG_APP_PROJECT_VER dans
+#    sdkconfig.defaults si tu veux distinguer la version installée)
+idf.py build
+
+# 2. Publier le .bin + générer le manifest sur le VPS
+~/workspace/scripts-deploiement/publish.sh temperature_1 1.0.1 build/esp32-ds18b20-banes.bin
+
+# 3. Récupérer l'URL exacte générée
+ssh vps "cat ~/ota-infra/firmware/temperature_1/manifest.json"
+
+# 4. Déclencher manuellement (payload = URL du .bin lui-même, PAS celle du
+#    manifest.json — voir ota_app.c, le payload attendu est l'URL directe)
 mosquitto_pub -h 10.10.0.1 -u <user> -P <password> \
   -t commands/banes/esp32-ds18b20-1/ota/update \
-  -m "https://mon-serveur/firmware/esp32-ds18b20-1.bin"
+  -m "http://10.10.0.1:8080/firmware/temperature_1/temperature_1_v1.0.1.bin"
 ```
+
+⚠️ **À vérifier avant de tester** : la règle iptables `DOCKER-USER` du VPS
+(voir [reseau-vps.md](https://github.com/rol12130/fiches-projet/blob/main/reseau-vps.md))
+autorise Luceau (`192.168.1.0/24`) sur les ports `1883,3000,3001,1880,8086,9001,8088`
+— **le port `8080` n'y figure pas**. Si le device est sur Luceau au moment
+du test, le téléchargement risque d'échouer en timeout silencieux, comme
+le MQTT avant le correctif de ce même fichier.
 
 Suivre la progression sur :
 

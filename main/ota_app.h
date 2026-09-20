@@ -19,9 +19,12 @@ extern "C" {
  * main.c) : si le nouveau firmware plante avant confirmation, le
  * bootloader revient tout seul sur l'ancienne partition ota_x.
  *
- * @param payload    l'URL HTTPS complète du firmware .bin à installer
- *                    (payload MQTT brut, pas de JSON — ex :
- *                    "https://mon-serveur/firmware/esp32-ds18b20-1.bin").
+ * @param payload    l'URL complète du firmware .bin à installer, en http://
+ *                    ou https:// (esp_https_ota() gère les deux selon le
+ *                    schéma — l'infra du projet sert actuellement en HTTP
+ *                    simple, voir scripts-deploiement/generate_manifest.sh
+ *                    — ex : "http://10.10.0.1:8080/firmware/temperature_1/temperature_1_v1.0.1.bin").
+ *                    Payload MQTT brut, pas de JSON.
  *                    Une commande OTA déjà en cours est ignorée (log +
  *                    notification "busy") plutôt que d'en lancer une
  *                    deuxième en parallèle.
