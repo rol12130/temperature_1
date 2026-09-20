@@ -107,12 +107,15 @@ mosquitto_pub -h 10.10.0.1 -u <user> -P <password> \
   -m "http://10.10.0.1:8080/firmware/temperature_1/temperature_1_v1.0.1.bin"
 ```
 
-⚠️ **À vérifier avant de tester** : la règle iptables `DOCKER-USER` du VPS
-(voir [reseau-vps.md](https://github.com/rol12130/fiches-projet/blob/main/reseau-vps.md))
-autorise Luceau (`192.168.1.0/24`) sur les ports `1883,3000,3001,1880,8086,9001,8088`
-— **le port `8080` n'y figure pas**. Si le device est sur Luceau au moment
-du test, le téléchargement risque d'échouer en timeout silencieux, comme
-le MQTT avant le correctif de ce même fichier.
+ℹ️ Le port `8080` du VPS a été spécifiquement investigué (voir
+[reseau-vps.md](https://github.com/rol12130/fiches-projet/blob/main/reseau-vps.md)) :
+accessible depuis Luceau et Banes sans restriction (à la différence des
+ports `1883`/etc., il échappe au filtrage `DOCKER-USER` à cause de l'ordre
+de traduction NAT de Docker) — donc pas de blocage réseau attendu pour ce
+téléchargement. Point de vigilance **sécurité** signalé dans cette même
+fiche : ce serveur est en fait accessible depuis n'importe quel peer
+WireGuard sans restriction de source, pas seulement Banes/Luceau — hors
+sujet pour ce test, mais à garder en tête.
 
 Suivre la progression sur :
 
