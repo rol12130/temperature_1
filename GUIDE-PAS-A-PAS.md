@@ -144,7 +144,50 @@ regarder ce qui se passe, un pour envoyer la commande.
 
 ---
 
-## Premier clonage (si tu repars de zéro sur une nouvelle machine)
+## Ajouter une nouvelle sonde (2e, 3e...)
+
+Le code est **identique** pour toutes les sondes — seule la config change
+(identifiant, site, WiFi). Pas besoin de dupliquer le dépôt : un dossier
+local séparé par sonde physique, tous clonés depuis ce même dépôt GitHub.
+
+1. **Clone dans un nouveau dossier**, nommé par emplacement plutôt que par
+   numéro (plus facile à s'y retrouver quand tu en auras plusieurs) :
+   ```
+   cd ~/workspace
+   git clone https://github.com/rol12130/temperature_1.git temp-banes-salon
+   cd temp-banes-salon
+   ```
+
+2. **Configure cette instance :**
+   ```
+   source ~/esp/esp-idf-v5.5.1/export.sh
+   idf.py set-target esp32
+   idf.py menuconfig
+   ```
+   Dans *Capteur DS18B20 - Configuration app*, change au minimum :
+   - **WiFi** → SSID/mot de passe du réseau où cette sonde sera posée
+     (celui de Banes, différent de celui de Luceau utilisé pour les
+     premiers tests)
+   - **MQTT → Identifiant du device** → un identifiant **jamais utilisé
+     ailleurs** (`esp32-ds18b20-2` pour la 2e sonde du projet, peu importe
+     le site — incrémente simplement à chaque nouvelle sonde). Deux
+     sondes avec le même identifiant publieraient sur les mêmes topics et
+     recevraient les mêmes commandes OTA en même temps, à éviter.
+   - **MQTT → Identifiant du site** → `banes` (déjà la valeur par défaut)
+     ou `luceau` selon où tu déploies
+
+3. **Build et flashe normalement** (voir Procédure 1 plus haut) :
+   ```
+   idf.py build
+   idf.py -p /dev/cu.usbserial-XXX flash monitor
+   ```
+   (le port sera probablement différent si les deux cartes sont branchées
+   en même temps — vérifie avec `ls /dev/cu.*`)
+
+Pour les mises à jour de code plus tard : fais le changement dans un seul
+dossier, commit/push, puis `git pull` dans chacun des autres dossiers
+avant de rebuilder/reflasher — pas besoin de retaper le code partout.
+
 
 ```
 cd ~/workspace
