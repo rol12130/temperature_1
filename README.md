@@ -94,22 +94,32 @@ déclenchement automatique publie en dur sur `commands/<site>/<device>/factory_r
 `publish.sh`/`generate_manifest.sh`, en revanche, sont génériques et
 réutilisables tels quels.
 
+⚠️ **Un nom de projet par device, pas un nom partagé** : le binaire est
+différent pour chaque sonde (WiFi et identifiant MQTT compilés en dur
+dedans, voir `sdkconfig`). Utiliser le même nom de projet (ex.
+`temperature_1`) pour deux sondes différentes écraserait le manifest/binaire
+de l'une avec celui de l'autre sur le VPS — utiliser l'identifiant du
+device (`CONFIG_MQTT_DEVICE`, ex. `esp32-ds18b20-2`) comme nom de projet.
+
 ```bash
-# 1. Build (dans ce dépôt, après avoir bumpé CONFIG_APP_PROJECT_VER dans
-#    sdkconfig.defaults si tu veux distinguer la version installée)
+# 1. Build (voir bump_version.sh pour changer CONFIG_APP_PROJECT_VER —
+#    même numéro de version pour toutes les sondes qui tournent le même
+#    code, ça identifie la version du firmware, pas le device)
 idf.py build
 
-# 2. Publier le .bin + générer le manifest sur le VPS
-~/workspace/scripts-deploiement/publish.sh temperature_1 1.0.1 build/esp32-ds18b20-banes.bin
+# 2. Publier le .bin + générer le manifest sur le VPS — <device> =
+#    l'identifiant CONFIG_MQTT_DEVICE de CETTE sonde (ex. esp32-ds18b20-2)
+~/workspace/scripts-deploiement/publish.sh <device> 1.0.1 build/esp32-ds18b20-banes.bin
 
 # 3. Récupérer l'URL exacte générée
-ssh vps "cat ~/ota-infra/firmware/temperature_1/manifest.json"
+ssh vps "cat ~/ota-infra/firmware/<device>/manifest.json"
 
 # 4. Déclencher manuellement (payload = URL du .bin lui-même, PAS celle du
-#    manifest.json — voir ota_app.c, le payload attendu est l'URL directe)
+#    manifest.json — voir ota_app.c, le payload attendu est l'URL directe).
+#    Le topic commands/.../<device>/... doit correspondre à CETTE sonde.
 mosquitto_pub -h 10.10.0.1 -u <user> -P <password> \
-  -t commands/banes/esp32-ds18b20-1/ota/update \
-  -m "http://10.10.0.1:8080/firmware/temperature_1/temperature_1_v1.0.1.bin"
+  -t commands/banes/<device>/ota/update \
+  -m "http://10.10.0.1:8080/firmware/<device>/<device>_v1.0.1.bin"
 ```
 
 ℹ️ Le port `8080` du VPS a été spécifiquement investigué (voir

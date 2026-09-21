@@ -68,14 +68,21 @@ regarder ce qui se passe, un pour envoyer la commande.
 
 ### Terminal 1 — préparer et publier le nouveau firmware
 
+Répète cette procédure **dans le dossier de chaque sonde** que tu veux
+mettre à jour (`temp-banes-rdc`, `temp-banes-ch-nous`, ...) — un binaire
+différent par sonde (WiFi + identifiant compilés en dur dedans), mais
+**avec le même numéro de version** pour toutes, tant qu'elles tournent le
+même code : ça permet de vérifier depuis MQTT que le déploiement a bien
+touché toute la flotte (voir le champ `version` publié sur
+`notifications/.../status`).
+
 1. ```
-   cd ~/workspace/temperature_1
+   cd ~/workspace/temp-banes-rdc
    source ~/esp/esp-idf-v5.5.1/export.sh
    ```
 
-2. **Change le numéro de version**, pour pouvoir vérifier après coup que
-   la mise à jour a bien eu lieu (remplace `1.0.2` par le numéro que tu
-   veux) :
+2. **Change le numéro de version** (remplace `1.0.2` par le numéro que tu
+   veux — **le même dans chaque dossier de sonde** pour ce déploiement) :
    ```
    ./bump_version.sh 1.0.2
    ```
@@ -85,12 +92,16 @@ regarder ce qui se passe, un pour envoyer la commande.
    idf.py build
    ```
 
-4. **Publie le nouveau `.bin` sur le VPS** (remplace `1.0.2` par le
-   numéro que tu as choisi à l'étape 2) :
+4. **Publie le nouveau `.bin` sur le VPS.** ⚠️ Le premier argument est
+   l'**identifiant de cette sonde** (`CONFIG_MQTT_DEVICE`, celui que tu as
+   mis dans `menuconfig` — ex. `esp32-ds18b20-1` pour `temp-banes-rdc`),
+   **pas** un nom générique : utiliser le même nom pour deux sondes
+   différentes écraserait le binaire de l'une avec celui de l'autre sur le
+   VPS.
    ```
-   ~/workspace/scripts-deploiement/publish.sh temperature_1 1.0.2 build/esp32-ds18b20-banes.bin
+   ~/workspace/scripts-deploiement/publish.sh esp32-ds18b20-1 1.0.2 build/esp32-ds18b20-banes.bin
    ```
-   Le script affiche une ligne `Fichier : /home/roland/ota-infra/firmware/temperature_1/temperature_1_v1.0.2.bin`
+   Le script affiche une ligne `Fichier : /home/roland/ota-infra/firmware/esp32-ds18b20-1/esp32-ds18b20-1_v1.0.2.bin`
    — note ce chemin, il te servira à l'étape suivante.
 
 5. **Ouvre le monitor série** (pour voir la mise à jour se dérouler en
@@ -110,13 +121,14 @@ regarder ce qui se passe, un pour envoyer la commande.
    `/home/roland/ota-infra/firmware/...` par
    `http://10.10.0.1:8080/firmware/...`. Par exemple :
    ```
-   http://10.10.0.1:8080/firmware/temperature_1/temperature_1_v1.0.2.bin
+   http://10.10.0.1:8080/firmware/esp32-ds18b20-1/esp32-ds18b20-1_v1.0.2.bin
    ```
 
-8. **Envoie la commande** (tout sur une seule ligne, remplace l'URL à la
-   fin par celle que tu viens de construire) :
+8. **Envoie la commande** (tout sur une seule ligne — vérifie que le
+   `<device>` dans le topic correspond bien à la sonde que tu mets à jour,
+   même chose que l'identifiant utilisé à l'étape 4) :
    ```
-   mosquitto_pub -h 10.10.0.1 -u mqtt_admin -P R0l4nd57I0T -t commands/banes/esp32-ds18b20-1/ota/update -m "http://10.10.0.1:8080/firmware/temperature_1/temperature_1_v1.0.2.bin"
+   mosquitto_pub -h 10.10.0.1 -u mqtt_admin -P R0l4nd57I0T -t commands/banes/esp32-ds18b20-1/ota/update -m "http://10.10.0.1:8080/firmware/esp32-ds18b20-1/esp32-ds18b20-1_v1.0.2.bin"
    ```
    Cette commande ne doit rien afficher — un terminal silencieux qui rend
    la main tout de suite veut dire que ça a marché.

@@ -6,6 +6,7 @@
 #include <string.h>
 #include "esp_log.h"
 #include "esp_mac.h"
+#include "esp_app_desc.h"
 #include "mqtt_client.h"
 #include "json_helper.h"
 
@@ -72,9 +73,12 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base,
             /* notifications/... est en JSON à plat (convention du projet) —
              * publié indépendamment sur les 2 brokers dès que chacun se
              * connecte, pour que le statut reste visible même si un seul
-             * des deux liens est up. */
+             * des deux liens est up. "version" permet de vérifier depuis
+             * MQTT qu'un déploiement OTA a bien touché toute la flotte de
+             * sondes, sans avoir à se rebrancher en USB sur chacune. */
             json_builder_t *b = json_builder_new();
             json_builder_add_string(b, "status", "online");
+            json_builder_add_string(b, "version", esp_app_get_description()->version);
             char *payload = json_builder_finish(b);
             esp_mqtt_client_publish(client, s_topic_status, payload, 0, 1, true);
             free(payload);
