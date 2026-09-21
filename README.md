@@ -8,6 +8,11 @@ plan de topics `metrics|logs|notifications|commands/<site>/<device>/...`,
 payloads JSON à plat via le même petit `json_helper`, double publication des
 metrics sur le broker local du site et le broker VPS.
 
+> 👉 **Pas à l'aise avec les suites de commandes terminal ?** Va directement
+> au [guide pas-à-pas](./GUIDE-PAS-A-PAS.md) — flasher en USB et faire une
+> mise à jour OTA, expliqué étape par étape. Ce README-ci est plutôt une
+> référence technique pour qui est déjà familier avec ESP-IDF.
+
 Voir la [fiche chapeau](https://github.com/rol12130/fiches-projet/blob/main/fiche-chapeau.md)
 du projet pour le contexte général. Site concerné : **Banes**.
 
