@@ -74,12 +74,11 @@ regarder ce qui se passe, un pour envoyer la commande.
    ```
 
 2. **Change le numéro de version**, pour pouvoir vérifier après coup que
-   la mise à jour a bien eu lieu. Ouvre le fichier `sdkconfig` (à la
-   racine du projet) avec un éditeur de texte, cherche la ligne :
+   la mise à jour a bien eu lieu (remplace `1.0.2` par le numéro que tu
+   veux) :
    ```
-   CONFIG_APP_PROJECT_VER="1.0.1"
+   ./bump_version.sh 1.0.2
    ```
-   et change le numéro (par exemple `"1.0.2"`).
 
 3. **Recompile :**
    ```
