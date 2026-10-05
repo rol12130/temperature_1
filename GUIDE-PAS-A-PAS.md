@@ -253,6 +253,37 @@ Tout le reste (WiFi, MQTT, OTA, DS18B20) fonctionne pareil.
    sources simultanées (risque d'abîmer la carte, l'alimentation, voire le
    port USB du Mac). Une seule source à la fois.
 
+### Migrer une sonde existante (HW-394 → C3) en gardant son identité
+
+La HW-394 n'est plus utilisée pour les nouvelles sondes. Pour passer une
+sonde déjà en service (ex. `temp-banes-rdc`) sur une C3, **en gardant le
+même identifiant MQTT** (les données de la sonde restent sur les mêmes
+topics) :
+
+1. ```
+   cd ~/workspace/temp-banes-rdc
+   git pull                                   # récupère le support C3
+   cp sdkconfig ~/sdkconfig-rdc-hw394.bak     # copie de sécurité, hors dépôt
+   source ~/esp/esp-idf-v5.5.1/export.sh
+   idf.py set-target esp32c3
+   idf.py menuconfig
+   ```
+   (`set-target` renomme l'ancien `sdkconfig` en `sdkconfig.old` — mais si
+   tu le relances une 2e fois, ce `.old` est écrasé : d'où la copie de
+   sécurité ci-dessus. Ne le lance donc qu'**une seule fois**.)
+
+2. Dans `menuconfig`, tout est remis aux valeurs par défaut — à ressaisir :
+   WiFi (SSID + mot de passe), MQTT (utilisateur + mot de passe), la
+   broche 1-Wire (voir plus haut), et surtout **l'identifiant du device** :
+   remets celui de la sonde d'origine (`esp32-ds18b20-1` pour
+   `temp-banes-rdc`, `esp32-ds18b20-2` pour `temp-banes-ch-nous`, etc.).
+   ⚠️ La valeur par défaut est toujours `esp32-ds18b20-1` : si tu l'oublies
+   pour une autre sonde, deux sondes se retrouvent avec le même
+   identifiant.
+
+3. Puis `idf.py build` et le flash (port `usbmodem`, mode téléchargement
+   manuel si besoin — voir plus haut).
+
 À savoir côté OTA : un binaire compilé pour une puce ne peut pas être
 installé sur l'autre — ESP-IDF vérifie l'identifiant de puce de l'image et
 refuse avec `Mismatch chip id`. Comme chaque sonde a de toute façon son

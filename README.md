@@ -21,8 +21,11 @@ Même code pour les deux, la cible se choisit avec `idf.py set-target` :
 
 | Carte | Cible | USB | Port macOS | Réglages propres |
 |---|---|---|---|---|
-| **HW-394 / WR-32** (ESP32 classique, 4 Mo) | `esp32` | convertisseur CH340 | `/dev/cu.usbserial-XXX` | — |
-| **ESP32-C3 SuperMini** (RISC-V, 4 Mo embarqués) | `esp32c3` | natif (USB Serial/JTAG) | `/dev/cu.usbmodemXXXX` | `sdkconfig.defaults.esp32c3` (console sur l'USB natif) |
+| **ESP32-C3 SuperMini** (RISC-V, 4 Mo embarqués) — **carte retenue** | `esp32c3` | natif (USB Serial/JTAG) | `/dev/cu.usbmodemXXXX` | `sdkconfig.defaults.esp32c3` (console sur l'USB natif) |
+| HW-394 / WR-32 (ESP32 classique, 4 Mo) — *héritée, plus utilisée pour les nouvelles sondes* | `esp32` | convertisseur CH340 | `/dev/cu.usbserial-XXX` | — |
+
+Le support de la HW-394 est conservé tant que des sondes en service tournent
+encore dessus (migration vers C3 : voir le guide pas-à-pas).
 
 Détails et pièges propres à la C3 (mode téléchargement manuel, broches à
 éviter, alimentation) : section *Utiliser une carte ESP32-C3 SuperMini* du
