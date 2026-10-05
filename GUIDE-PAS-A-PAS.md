@@ -241,17 +241,26 @@ Tout le reste (WiFi, MQTT, OTA, DS18B20) fonctionne pareil.
    *GPIO du bus*) : évite **GPIO2, 8 et 9** (broches de démarrage — GPIO8
    porte aussi la LED, GPIO9 le bouton BOOT), ainsi que GPIO18/19 (USB) et
    GPIO20/21 (UART). Les plus "propres" : **GPIO0, 1, 3, 10**. GPIO4 (la
-   valeur par défaut, utilisée sur la HW-394) fonctionne aussi mais
-   plusieurs références la signalent comme broche JTAG utilisée au
-   démarrage. **Vérifie la sérigraphie de ta carte** : le brochage varie
+   valeur par défaut, utilisée sur la HW-394) fonctionne aussi : ce n'est
+   pas une broche de démarrage. Une des références consultées la signale
+   par prudence comme broche JTAG, l'autre n'en parle pas. **Vérifie la sérigraphie de ta carte** : le brochage varie
    légèrement selon les fabricants, et c'est elle qui te dira quelle
    broche est voisine de la 3V3 (pour souder le pull-up 4.7 kΩ directement
    sur la carte, comme sur la HW-394).
 
-5. ⚠️ **Alimentation** : n'alimente **jamais** la broche 5V pendant que
-   l'USB est branché — ces cartes n'ont pas de protection contre deux
-   sources simultanées (risque d'abîmer la carte, l'alimentation, voire le
-   port USB du Mac). Une seule source à la fois.
+5. ⚠️ **Alimentation : une seule source à la fois.** Soit l'USB-C, soit
+   une alimentation externe de 5V sur la broche **5V** (+ GND) — pas les
+   deux ensemble. Sur ces cartes la broche 5V est reliée au 5V du
+   connecteur USB-C : elle sert d'entrée si tu alimentes de l'extérieur,
+   de sortie si l'USB est branché. Les deux sources consultées donnent la
+   même règle ; l'une précise qu'aucun circuit n'isole les deux sources et
+   que ça peut abîmer la carte, l'alimentation ou le port USB de
+   l'ordinateur, l'autre se contente de dire de ne pas le faire. Je n'ai
+   pas vu le schéma de ta carte exacte, la règle reste donc prudente. La
+   plage de tension acceptée sur la broche 5V varie selon les sources
+   (3,3–6 V pour l'une, 4,3–6 V pour l'autre) : reste à 5 V.
+   Pour une sonde en service, le plus simple est un chargeur USB classique
+   sur le port USB-C : tu n'as alors pas besoin de toucher à la broche 5V.
 
 ### Migrer une sonde existante (HW-394 → C3) en gardant son identité
 

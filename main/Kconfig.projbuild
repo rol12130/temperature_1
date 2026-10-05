@@ -67,8 +67,9 @@ menu "Capteur DS18B20 - Configuration app"
                 - ESP32-C3 (SuperMini)     : GPIO2, 8, 9 (strapping — GPIO8
                   porte aussi la LED, GPIO9 le bouton BOOT), GPIO18/19 (USB),
                   GPIO20/21 (UART0). Les plus "propres" : GPIO0, 1, 3, 10.
-                  GPIO4 fonctionne aussi mais plusieurs références le
-                  signalent comme broche JTAG utilisée au démarrage.
+                  GPIO4 fonctionne aussi (pas une broche de démarrage) ;
+                  une des références consultées la signale par prudence
+                  comme broche JTAG.
 
         config DS18B20_MAX_SENSORS
             int "Nombre max de sondes attendues sur le bus"
