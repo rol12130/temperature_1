@@ -49,8 +49,9 @@ rester homogène avec le reste du projet.
 
 - **DS18B20 → GPIO4** par défaut (configurable, voir `menuconfig` →
   *Capteur DS18B20 - Configuration app* → *DS18B20 (1-Wire)*). Sur
-  l'ESP32-C3 SuperMini, privilégier GPIO0/1/3/10 et éviter GPIO2/8/9
-  (broches de démarrage) — voir le guide pas-à-pas.
+  l'ESP32-C3 SuperMini, GPIO4 convient aussi (voisine de la 3V3 sur le
+  brochage du fabricant) ; éviter GPIO2/8/9 (broches de démarrage) — voir
+  le guide pas-à-pas.
 - Résistance de pull-up **4.7 kΩ entre GPIO4 et 3.3V** (recommandé même en
   usage normal ; le pull-up interne du GPIO, activable via
   `CONFIG_DS18B20_ENABLE_INTERNAL_PULLUP`, est un dépannage, pas une

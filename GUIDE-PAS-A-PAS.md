@@ -224,43 +224,59 @@ Tout le reste (WiFi, MQTT, OTA, DS18B20) fonctionne pareil.
 2. **Le port USB n'a pas le même nom** : `/dev/cu.usbmodemXXXX` au lieu de
    `/dev/cu.usbserial-XXX` (repère-le avec `ls /dev/cu.*`).
 
-3. **Premier flash : mode téléchargement manuel si ça ne se connecte pas.**
+3. **Mode téléchargement manuel (BOOT + RESET) si ça ne se connecte pas.**
    Si `idf.py flash` n'arrive pas à se connecter à la carte :
    - maintiens le bouton **BOOT**
    - appuie brièvement sur **RESET** puis relâche-le
    - relâche **BOOT**
    - relance la commande de flash
 
-   Ça ne devrait être nécessaire qu'au tout premier flash, et
-   occasionnellement ensuite (notamment si un firmware plante).
-   Après un flash, le port USB disparaît puis réapparaît une seconde
-   pendant que la carte redémarre — normal. Si le monitor ne trouve pas
-   le port juste après, relance simplement `idf.py -p ... monitor`.
+   Autre méthode : maintenir **BOOT** pendant que tu branches le câble USB.
+   Les sources ne sont pas d'accord sur la fréquence : une seule fois au
+   tout début (Random Nerd Tutorials, Last Minute Engineers) ou à chaque
+   connexion (datasheet du fabricant). On le saura après les premiers
+   flashs sur ta carte. Après un flash, le port USB disparaît puis
+   réapparaît une seconde pendant que la carte redémarre — normal. Si le
+   monitor ne trouve pas le port juste après, relance simplement
+   `idf.py -p ... monitor` ; si le programme ne semble pas démarrer,
+   appuie sur **RESET** (le fabricant le demande après chaque envoi).
+   ⚠️ Utilise un câble USB-C **qui transmet les données** : certains câbles
+   ne font que charger et la carte n'apparaît alors jamais sur le Mac.
 
 4. **Choix de la broche 1-Wire** (`menuconfig` → *DS18B20 (1-Wire)* →
-   *GPIO du bus*) : évite **GPIO2, 8 et 9** (broches de démarrage — GPIO8
-   porte aussi la LED, GPIO9 le bouton BOOT), ainsi que GPIO18/19 (USB) et
-   GPIO20/21 (UART). Les plus "propres" : **GPIO0, 1, 3, 10**. GPIO4 (la
-   valeur par défaut, utilisée sur la HW-394) fonctionne aussi : ce n'est
-   pas une broche de démarrage. Une des références consultées la signale
-   par prudence comme broche JTAG, l'autre n'en parle pas. **Vérifie la sérigraphie de ta carte** : le brochage varie
-   légèrement selon les fabricants, et c'est elle qui te dira quelle
-   broche est voisine de la 3V3 (pour souder le pull-up 4.7 kΩ directement
-   sur la carte, comme sur la HW-394).
+   *GPIO du bus*). Brochage du fabricant (USB en haut) : à gauche, de haut
+   en bas, **5V, GND, 3V3, GPIO4, GPIO3, GPIO2, GPIO1, GPIO0** ; à droite
+   GPIO5, 6, 7, 8, 9, 10, 20, 21. **GPIO4, la valeur par défaut, est donc
+   juste à côté de la 3V3** : comme sur la HW-394, tu peux souder le
+   pull-up 4.7 kΩ directement entre ces deux broches. Ce n'est pas une
+   broche de démarrage (les trois sont GPIO2, 8 et 9). À éviter pour le
+   1-Wire : **GPIO2, 8, 9** (démarrage — GPIO8 porte aussi la LED, GPIO9
+   le bouton BOOT), GPIO18/19 (USB) et GPIO20/21 (UART). GPIO0, 1, 3 et 10
+   restent de bonnes alternatives. Vérifie quand même la sérigraphie de ta
+   carte : le brochage peut varier légèrement selon les fabricants.
 
 5. ⚠️ **Alimentation : une seule source à la fois.** Soit l'USB-C, soit
-   une alimentation externe de 5V sur la broche **5V** (+ GND) — pas les
-   deux ensemble. Sur ces cartes la broche 5V est reliée au 5V du
-   connecteur USB-C : elle sert d'entrée si tu alimentes de l'extérieur,
-   de sortie si l'USB est branché. Les deux sources consultées donnent la
-   même règle ; l'une précise qu'aucun circuit n'isole les deux sources et
-   que ça peut abîmer la carte, l'alimentation ou le port USB de
-   l'ordinateur, l'autre se contente de dire de ne pas le faire. Je n'ai
-   pas vu le schéma de ta carte exacte, la règle reste donc prudente. La
-   plage de tension acceptée sur la broche 5V varie selon les sources
-   (3,3–6 V pour l'une, 4,3–6 V pour l'autre) : reste à 5 V.
+   une alimentation externe sur la broche **5V** (+ GND), jamais les deux.
+   Le datasheet du fabricant le dit en toutes lettres (« USB et
+   alimentation externe : une seule des deux »), et son schéma montre
+   pourquoi : la broche 5V est reliée directement au **VBUS** du
+   connecteur USB-C, *avant* la diode (Schottky) qui alimente le
+   régulateur 3,3 V. L'USB et une alimentation externe se retrouveraient
+   donc connectés ensemble, sans rien pour les isoler. Les autres sources
+   évoquent un risque pour la carte, l'alimentation ou le port USB de
+   l'ordinateur ; le datasheet ne chiffre pas ce risque.
+   Pour la plage de tension, le fabricant annonce 3,3–6 V sur la broche 5V
+   (l'autre source disait 4,3–6 V). Reste à **5 V** : entre la diode et le
+   régulateur, 3,3 V en entrée serait trop juste pour sortir 3,3 V
+   (déduction d'après le schéma, non testée).
    Pour une sonde en service, le plus simple est un chargeur USB classique
-   sur le port USB-C : tu n'as alors pas besoin de toucher à la broche 5V.
+   sur le port USB-C : tu n'as alors pas à toucher à la broche 5V.
+
+6. **Antenne WiFi** : c'est la petite pastille à l'extrémité de la carte
+   opposée au port USB (le datasheet parle d'« antenne externe » mais ses
+   propres photos montrent une antenne intégrée). Garde cette zone
+   dégagée : pas de métal, pas de batterie ni de fils posés dessus, et pas
+   de carte enfoncée dans une breadboard.
 
 ### Migrer une sonde existante (HW-394 → C3) en gardant son identité
 
