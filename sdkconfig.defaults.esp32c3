@@ -1,0 +1,17 @@
+# Réglages propres à l'ESP32-C3 (ex. carte ESP32-C3 SuperMini).
+#
+# Chargé automatiquement APRÈS sdkconfig.defaults quand la cible est
+# esp32c3 (mécanisme standard ESP-IDF : sdkconfig.defaults.<cible>).
+# Ignoré pour la cible esp32 (carte HW-394).
+
+# --- Console sur l'USB natif (USB Serial/JTAG) ---
+# L'ESP32-C3 SuperMini n'a pas de convertisseur USB-série (CH340/CP210x)
+# comme la HW-394 : le port USB-C est directement le contrôleur "USB
+# Serial/JTAG" de la puce, et sur macOS le port apparaît en
+# /dev/cu.usbmodemXXXX (au lieu de /dev/cu.usbserial-XXX).
+#
+# Par défaut ESP-IDF (v5.5) envoie bien déjà les logs sur ce port en mode
+# "secondaire" (sortie seule, non bloquante), mais forcer l'USB Serial/JTAG
+# comme console PRINCIPALE est plus fiable (sortie bloquante, pas de logs
+# perdus, entrée possible).
+CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y

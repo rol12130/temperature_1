@@ -1,7 +1,6 @@
 # esp32-ds18b20-banes
 
-Petit firmware ESP-IDF pour une carte **HW-394 (WR-32)** — ESP32 classique,
-WiFi, USB-C, 4 Mo de flash — qui lit 1 ou 2 sondes de température **DS18B20**
+Petit firmware ESP-IDF qui lit 1 ou 2 sondes de température **DS18B20**
 (bus 1-Wire) et publie les mesures en MQTT, dans le même style que
 [esp32p4-master-banes](https://github.com/rol12130/esp32p4-master-banes) :
 plan de topics `metrics|logs|notifications|commands/<site>/<device>/...`,
@@ -16,11 +15,24 @@ metrics sur le broker local du site et le broker VPS.
 Voir la [fiche chapeau](https://github.com/rol12130/fiches-projet/blob/main/fiche-chapeau.md)
 du projet pour le contexte général. Site concerné : **Banes**.
 
+## Cartes supportées
+
+Même code pour les deux, la cible se choisit avec `idf.py set-target` :
+
+| Carte | Cible | USB | Port macOS | Réglages propres |
+|---|---|---|---|---|
+| **HW-394 / WR-32** (ESP32 classique, 4 Mo) | `esp32` | convertisseur CH340 | `/dev/cu.usbserial-XXX` | — |
+| **ESP32-C3 SuperMini** (RISC-V, 4 Mo embarqués) | `esp32c3` | natif (USB Serial/JTAG) | `/dev/cu.usbmodemXXXX` | `sdkconfig.defaults.esp32c3` (console sur l'USB natif) |
+
+Détails et pièges propres à la C3 (mode téléchargement manuel, broches à
+éviter, alimentation) : section *Utiliser une carte ESP32-C3 SuperMini* du
+[guide pas-à-pas](./GUIDE-PAS-A-PAS.md).
+
 ## Différences volontaires avec esp32p4-master-banes
 
 | | esp32p4-master-banes | esp32-ds18b20-banes |
 |---|---|---|
-| Cible | ESP32-P4 (Waveshare ESP32-P4-ETH) | ESP32 classique (HW-394 / WR-32) |
+| Cible | ESP32-P4 (Waveshare ESP32-P4-ETH) | ESP32 classique (HW-394 / WR-32) ou ESP32-C3 (SuperMini) |
 | Réseau | Ethernet (PHY IP101, RMII) | WiFi (station) |
 | OTA | Mécanisme **rescue** dédié (partition factory + compteur de boot-loop NVS + dépôts `ota_rescue_*` séparés) | **Volontairement simple** : 2 partitions `ota_0`/`ota_1` standards ESP-IDF, `esp_https_ota()` classique déclenché par une commande MQTT, pas de partition factory ni de projet rescue. Anti-brick assuré uniquement par le rollback automatique du bootloader ESP-IDF (`CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE`) |
 | Commande OTA | `factory_reset` sur le broker distant | `ota/update` sur le broker distant (même principe : reste joignable même si le broker local est down) |
@@ -32,8 +44,10 @@ rester homogène avec le reste du projet.
 
 ## Câblage
 
-- **DS18B20 → GPIO4** (configurable, voir `menuconfig` → *Capteur DS18B20 -
-  Configuration app* → *DS18B20 (1-Wire)*)
+- **DS18B20 → GPIO4** par défaut (configurable, voir `menuconfig` →
+  *Capteur DS18B20 - Configuration app* → *DS18B20 (1-Wire)*). Sur
+  l'ESP32-C3 SuperMini, privilégier GPIO0/1/3/10 et éviter GPIO2/8/9
+  (broches de démarrage) — voir le guide pas-à-pas.
 - Résistance de pull-up **4.7 kΩ entre GPIO4 et 3.3V** (recommandé même en
   usage normal ; le pull-up interne du GPIO, activable via
   `CONFIG_DS18B20_ENABLE_INTERNAL_PULLUP`, est un dépannage, pas une
@@ -70,9 +84,9 @@ l'ajout de `sdkconfig`).
 ## Build / flash
 
 ```
-idf.py set-target esp32
+idf.py set-target esp32       # HW-394 ; esp32c3 pour une ESP32-C3 SuperMini
 idf.py build
-idf.py -p /dev/ttyUSB0 flash monitor
+idf.py -p /dev/cu.usbserial-XXX flash monitor   # C3 : /dev/cu.usbmodemXXXX
 ```
 
 Au premier `idf.py build`, le component manager télécharge automatiquement

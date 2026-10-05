@@ -1,7 +1,13 @@
 # --- Cible ---
-CONFIG_IDF_TARGET="esp32"
+# Volontairement PAS de CONFIG_IDF_TARGET ici : le dépôt supporte deux types
+# de cartes, choisis avec `idf.py set-target` :
+#   - esp32   : carte HW-394 / WR-32 (ESP32 classique)
+#   - esp32c3 : ESP32-C3 SuperMini
+# Les réglages propres à une puce sont dans sdkconfig.defaults.<cible>
+# (chargé automatiquement en plus de ce fichier, voir sdkconfig.defaults.esp32c3).
 
-# --- Flash (carte HW-394 / WR-32, module type ESP-WROOM-32, 4 Mo) ---
+# --- Flash (4 Mo sur les deux cartes : HW-394 / module ESP-WROOM-32, et
+#     ESP32-C3 SuperMini avec flash embarquée de 4 Mo) ---
 CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
 CONFIG_ESPTOOLPY_FLASHSIZE="4MB"
 
@@ -10,7 +16,7 @@ CONFIG_PARTITION_TABLE_CUSTOM=y
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
 CONFIG_PARTITION_TABLE_FILENAME="partitions.csv"
 
-# --- PSRAM ---
+# --- PSRAM (ESP32 classique uniquement — l'ESP32-C3 n'en a pas) ---
 # Le module ESP-WROOM-32 générique de ce type de carte n'a en général PAS
 # de PSRAM (contrairement à l'ESP32-P4 du master, qui en a 32 Mo). Laisser
 # désactivé sauf si tu confirmes une variante -32D/-32E/-32E avec PSRAM.

@@ -173,7 +173,7 @@ local séparé par sonde physique, tous clonés depuis ce même dépôt GitHub.
 2. **Configure cette instance :**
    ```
    source ~/esp/esp-idf-v5.5.1/export.sh
-   idf.py set-target esp32
+   idf.py set-target esp32      # carte HW-394 ; esp32c3 pour une ESP32-C3 SuperMini (voir plus bas)
    idf.py menuconfig
    ```
    Dans *Capteur DS18B20 - Configuration app*, change au minimum :
@@ -200,14 +200,76 @@ Pour les mises à jour de code plus tard : fais le changement dans un seul
 dossier, commit/push, puis `git pull` dans chacun des autres dossiers
 avant de rebuilder/reflasher — pas besoin de retaper le code partout.
 
+---
+
+## Utiliser une carte ESP32-C3 SuperMini (au lieu de la HW-394)
+
+Le dépôt supporte les deux types de carte, avec le même code. Ce qui
+change, c'est la **puce** (ESP32-C3 : RISC-V monocœur, au lieu de l'ESP32
+classique) et l'**USB** (natif sur la C3, sans convertisseur USB-série).
+Tout le reste (WiFi, MQTT, OTA, DS18B20) fonctionne pareil.
+
+1. **Cible : `esp32c3` au lieu de `esp32`**, dans un dossier cloné
+   (comme pour toute nouvelle sonde, voir plus haut) :
+   ```
+   idf.py set-target esp32c3
+   idf.py menuconfig
+   ```
+   ⚠️ Si tu **remplaces une HW-394 par une C3 dans un dossier existant**
+   (même sonde, même identifiant), `idf.py set-target esp32c3` régénère
+   `sdkconfig` : le WiFi et le MQTT sont à ressaisir dans `menuconfig`
+   (l'ancienne config reste lisible dans `sdkconfig.old` pour recopier les
+   valeurs). Cloner dans un nouveau dossier évite ce piège.
+
+2. **Le port USB n'a pas le même nom** : `/dev/cu.usbmodemXXXX` au lieu de
+   `/dev/cu.usbserial-XXX` (repère-le avec `ls /dev/cu.*`).
+
+3. **Premier flash : mode téléchargement manuel si ça ne se connecte pas.**
+   Si `idf.py flash` n'arrive pas à se connecter à la carte :
+   - maintiens le bouton **BOOT**
+   - appuie brièvement sur **RESET** puis relâche-le
+   - relâche **BOOT**
+   - relance la commande de flash
+
+   Ça ne devrait être nécessaire qu'au tout premier flash, et
+   occasionnellement ensuite (notamment si un firmware plante).
+   Après un flash, le port USB disparaît puis réapparaît une seconde
+   pendant que la carte redémarre — normal. Si le monitor ne trouve pas
+   le port juste après, relance simplement `idf.py -p ... monitor`.
+
+4. **Choix de la broche 1-Wire** (`menuconfig` → *DS18B20 (1-Wire)* →
+   *GPIO du bus*) : évite **GPIO2, 8 et 9** (broches de démarrage — GPIO8
+   porte aussi la LED, GPIO9 le bouton BOOT), ainsi que GPIO18/19 (USB) et
+   GPIO20/21 (UART). Les plus "propres" : **GPIO0, 1, 3, 10**. GPIO4 (la
+   valeur par défaut, utilisée sur la HW-394) fonctionne aussi mais
+   plusieurs références la signalent comme broche JTAG utilisée au
+   démarrage. **Vérifie la sérigraphie de ta carte** : le brochage varie
+   légèrement selon les fabricants, et c'est elle qui te dira quelle
+   broche est voisine de la 3V3 (pour souder le pull-up 4.7 kΩ directement
+   sur la carte, comme sur la HW-394).
+
+5. ⚠️ **Alimentation** : n'alimente **jamais** la broche 5V pendant que
+   l'USB est branché — ces cartes n'ont pas de protection contre deux
+   sources simultanées (risque d'abîmer la carte, l'alimentation, voire le
+   port USB du Mac). Une seule source à la fois.
+
+À savoir côté OTA : un binaire compilé pour une puce ne peut pas être
+installé sur l'autre — ESP-IDF vérifie l'identifiant de puce de l'image et
+refuse avec `Mismatch chip id`. Comme chaque sonde a de toute façon son
+propre binaire (un nom de projet par device dans `publish.sh`), il n'y a
+pas de risque de les mélanger.
+
+---
+
+## Premier clonage (si tu repars de zéro sur une nouvelle machine)
 
 ```
 cd ~/workspace
-git clone https://github.com/rol12130/temperature_1.git
+git clone https://github.com/rol12130/temperature_1.git temp-banes-rdc
 git clone https://github.com/rol12130/scripts-deploiement.git
-cd temperature_1
+cd temp-banes-rdc
 source ~/esp/esp-idf-v5.5.1/export.sh
-idf.py set-target esp32
+idf.py set-target esp32      # carte HW-394 ; esp32c3 pour une ESP32-C3 SuperMini
 idf.py menuconfig
 ```
 Dans `menuconfig`, renseigne le WiFi et les identifiants MQTT (menu
