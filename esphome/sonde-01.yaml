@@ -1,0 +1,10 @@
+# Sonde 01 : carte de test (ancienne esp32-ds18b20-1), emplacement rdc.
+substitutions:
+  name: sonde-01
+  site: banes
+  place: rdc
+  sensor_address: "0x0600000022838028"   # adresse ROM relevée sur la sonde de test (fiche Capteur de température)
+  mqtt_broker: 10.10.0.1                 # TEST : broker du VPS. Ensuite : 192.168.20.2 (broker du site)
+
+packages:
+  base: !include sonde-base.yaml

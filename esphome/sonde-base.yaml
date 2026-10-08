@@ -1,0 +1,63 @@
+# Configuration commune des sondes de température (ESPHome).
+# Les valeurs propres à chaque carte viennent des substitutions du fichier sonde-NN.yaml.
+# Version d'ESPHome validée : 2026.9.1 (à figer, voir README.md).
+
+esphome:
+  name: ${name}
+  friendly_name: ${name}
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+
+logger:
+  hardware_uart: USB_SERIAL_JTAG   # logs sur le port USB de la SuperMini
+
+api:
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+# Un seul client MQTT (ESPHome n'en gère qu'un) : le broker du site, ou celui du VPS pour le test.
+mqtt:
+  broker: ${mqtt_broker}
+  username: !secret mqtt_username
+  password: !secret mqtt_password
+  discovery: false
+  topic_prefix: notifications/${site}/${name}   # le statut devient .../status (online/offline conservé)
+  log_topic: logs/${site}/${name}/esphome
+
+time:
+  - platform: sntp
+    id: sntp_time
+
+one_wire:
+  - platform: gpio
+    pin: GPIO4
+    id: bus_1wire
+
+sensor:
+  - platform: dallas_temp
+    one_wire_id: bus_1wire
+    address: ${sensor_address}
+    id: air_temp
+    update_interval: 30s
+    internal: true          # pas de topic par défaut : on publie notre propre JSON ci-dessous
+    on_value:
+      then:
+        - if:
+            condition:
+              time.has_time:
+            then:
+              - mqtt.publish_json:
+                  topic: metrics/${site}/${name}/${place}
+                  payload: |-
+                    root["ts"] = id(sntp_time).now().timestamp;
+                    root["air_temp_c"] = x;
+                    root["addr"] = "${sensor_address}";

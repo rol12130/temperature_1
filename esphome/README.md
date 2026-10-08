@@ -1,0 +1,37 @@
+# Sondes de température sous ESPHome (test)
+
+**État (2026-10-07)** : configuration validée avec ESPHome 2026.9.1 (`esphome config`), mais **jamais flashée sur une carte**. Le but est de décider si ESPHome remplace le firmware C de ce dépôt pour les sondes (voir « Choses à discuter » dans la fiche chapeau de `fiches-projet`).
+
+## Fichiers
+
+- `sonde-base.yaml` : configuration commune à toutes les sondes
+- `sonde-01.yaml` : une carte (nom, site, emplacement, adresse de la sonde, broker). Une nouvelle sonde = une copie de ce fichier avec 4 lignes changées
+- `secrets.yaml.example` : à copier en `secrets.yaml` (ignoré par git)
+
+Elle publie la convention décidée le 2026-10-07 : `metrics/<site>/sonde-NN/<emplacement>` avec `{"ts", "air_temp_c", "addr"}`, le statut sur `notifications/<site>/sonde-NN/status` et les logs sur `logs/<site>/sonde-NN/esphome`.
+
+## Installer ESPHome
+
+Dans un environnement isolé, version figée : `esphome==2026.9.1`. Éviter le Python 3.14 de l'environnement ESP-IDF, dont la compatibilité avec ESPHome n'est pas vérifiée (préférer 3.12 ou 3.13, avec `uv tool` ou `pipx`).
+
+## Le test
+
+1. Copier `secrets.yaml.example` en `secrets.yaml` et le remplir.
+2. Premier flash en USB : `esphome run sonde-01.yaml`. Si la carte n'est pas reconnue, la brancher en maintenant le bouton BOOT.
+3. Écouter les messages sur le broker du VPS (c'est le réglage par défaut du test, le broker de la maison n'est pas nécessaire) :
+   `mosquitto_sub -h 10.10.0.1 -u mqtt_admin -P <mot de passe> -t 'metrics/banes/sonde-01/#' -v`
+4. Vérifier dans InfluxDB ou Grafana : `host=sonde-01`, `device=rdc`, champ `air_temp_c`.
+5. OTA à distance : connecter le Mac au partage de connexion du téléphone, activer WireGuard, puis `esphome run sonde-01.yaml --device <IP de la sonde>`.
+6. Passer au broker du site : `mqtt_broker: 192.168.20.2` dans `sonde-01.yaml`, identifiants MQTT vides dans `secrets.yaml`, puis OTA.
+
+## Critères de réussite
+
+- Le JSON arrive tel que la convention le décrit, et la donnée apparaît dans InfluxDB.
+- L'OTA fonctionne à travers WireGuard.
+- Les logs sont lisibles à distance (topic `logs/...` ou `esphome logs`).
+- La C3 tient le Wi-Fi 24 heures sans décrocher (point de vigilance noté dans la fiche Capteur de température).
+
+## Pas encore inclus
+
+- Heartbeat et version annoncée (uptime, version) : à ajouter si le test est concluant.
+- L'adresse `addr` n'est une étiquette qu'après l'ajout de `tag_keys = ["addr"]` dans Telegraf ; d'ici là elle reste un champ texte, sans gravité pour le test.
