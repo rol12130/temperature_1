@@ -34,4 +34,4 @@ Dans un environnement isolé, version figée : `esphome==2026.9.1`. Éviter le P
 ## Pas encore inclus
 
 - Heartbeat et version annoncée (uptime, version) : à ajouter si le test est concluant.
-- L'adresse `addr` n'est une étiquette qu'après l'ajout de `tag_keys = ["addr"]` dans Telegraf ; d'ici là elle reste un champ texte, sans gravité pour le test.
+- L'adresse `addr` n'est une étiquette qu'après l'ajout de `tag_keys = ["addr"]` dans Telegraf ; d'ici là le parseur JSON de Telegraf l'ignore et elle n'arrive pas dans InfluxDB, sans gravité pour le test (la température arrive).
