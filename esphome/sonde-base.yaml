@@ -25,7 +25,7 @@ wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
 
-# Un seul client MQTT (ESPHome n'en gère qu'un) : le broker du site, ou celui du VPS pour le test.
+# Un seul client MQTT (ESPHome n'en gère qu'un) : le broker du site.
 mqtt:
   broker: ${mqtt_broker}
   username: !secret mqtt_username
@@ -46,7 +46,7 @@ one_wire:
 sensor:
   - platform: dallas_temp
     one_wire_id: bus_1wire
-    address: ${sensor_address}
+    # pas d'adresse : ESPHome prend la seule sonde présente sur le bus (une sonde par carte)
     id: air_temp
     update_interval: 30s
     internal: true          # pas de topic par défaut : on publie notre propre JSON ci-dessous
@@ -61,4 +61,4 @@ sensor:
                   payload: |-
                     root["ts"] = id(sntp_time).now().timestamp;
                     root["air_temp_c"] = x;
-                    root["addr"] = "${sensor_address}";
+                    root["addr"] = id(air_temp).get_address_name().substr(2);   // adresse réelle, sans le préfixe 0x

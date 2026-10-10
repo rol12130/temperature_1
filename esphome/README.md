@@ -21,15 +21,17 @@ La carte et la broche 1-Wire sont des variables de `sonde-01.yaml` (`board`, `on
 - **C3 SuperMini** (décision documentée) : `esp32-c3-devkitm-1`, `GPIO4`.
 - **C6** : `esp32-c6-devkitc-1`, avec une autre broche. À ma connaissance, GPIO4 est une broche de strapping sur le C6 ; à confirmer avec la fiche de la carte. Les notes de la fiche Capteur de température (diode sur VBUS, brochage, GPIO4 voisine du 3V3) concernent la SuperMini C3 et ne s'appliquent pas telles quelles.
 
-## Le test
+## Le test (contre le broker de la maison, Mac sur le même réseau)
 
-1. Copier `secrets.yaml.example` en `secrets.yaml` et le remplir.
+1. Copier `secrets.yaml.example` en `secrets.yaml` et remplir le Wi-Fi et le mot de passe OTA (identifiants MQTT vides : le broker du site n'a pas d'authentification).
 2. Premier flash en USB : `esphome run sonde-01.yaml`. Si la carte n'est pas reconnue, la brancher en maintenant le bouton BOOT.
-3. Écouter les messages sur le broker du VPS (c'est le réglage par défaut du test, le broker de la maison n'est pas nécessaire) :
-   `mosquitto_sub -h 10.10.0.1 -u mqtt_admin -P <mot de passe> -t 'metrics/banes/sonde-01/#' -v`
-4. Vérifier dans InfluxDB ou Grafana : `host=sonde-01`, `device=rdc`, champ `air_temp_c`.
-5. OTA à distance : connecter le Mac au partage de connexion du téléphone, activer WireGuard, puis `esphome run sonde-01.yaml --device <IP de la sonde>`.
-6. Passer au broker du site : `mqtt_broker: 192.168.20.2` dans `sonde-01.yaml`, identifiants MQTT vides dans `secrets.yaml`, puis OTA.
+3. Dans les logs du premier démarrage, relever l'adresse de la sonde (bloc `one_wire`, « Found devices ») et la noter dans la fiche Capteur de température.
+4. Écouter les messages sur le broker de la maison :
+   `mosquitto_sub -h 192.168.20.2 -t 'metrics/banes/sonde-01/#' -t 'notifications/banes/sonde-01/#' -v`
+5. OTA sur le réseau local : `esphome run sonde-01.yaml --device <IP de la sonde>` (ou `sonde-01.local`).
+6. Plus tard, OTA à distance par WireGuard (Mac sur le partage de connexion du téléphone) : ports 3232 (OTA) et 6053 (`esphome logs`) à laisser passer sur le Mikrotik.
+
+InfluxDB : Telegraf ne lit aujourd'hui que le broker du VPS. Les données de ce test n'y arriveront qu'après l'ajout d'une entrée Telegraf sur le broker de la maison (prévu).
 
 ## Critères de réussite
 
@@ -45,4 +47,5 @@ La carte et la broche 1-Wire sont des variables de `sonde-01.yaml` (`board`, `on
 ## Pas encore inclus
 
 - Heartbeat et version annoncée (uptime, version) : à ajouter si le test est concluant.
+- L'adresse `addr` est lue sur la sonde au démarrage (une seule sonde par carte, choisie automatiquement). Deux sondes sur une même carte demanderaient de fixer les adresses dans la configuration.
 - L'adresse `addr` n'est une étiquette qu'après l'ajout de `tag_keys = ["addr"]` dans Telegraf ; d'ici là le parseur JSON de Telegraf l'ignore et elle n'arrive pas dans InfluxDB, sans gravité pour le test (la température arrive).

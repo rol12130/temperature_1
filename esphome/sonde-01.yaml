@@ -3,10 +3,9 @@ substitutions:
   name: sonde-01
   site: banes
   place: rdc
-  sensor_address: "0x0600000022838028"   # adresse ROM relevée sur la sonde de test (fiche Capteur de température)
   board: esp32-c3-devkitm-1              # C3 SuperMini. Pour un ESP32-C6 : esp32-c6-devkitc-1
   onewire_pin: GPIO4                     # C3 SuperMini. Sur C6, GPIO4 est à ma connaissance une broche de strapping : choisir une broche libre (à confirmer avec la fiche de la carte)
-  mqtt_broker: 10.10.0.1                 # TEST : broker du VPS. Ensuite : 192.168.20.2 (broker du site)
+  mqtt_broker: 192.168.20.2              # broker de la maison à Banes (sans authentification)
 
 packages:
   base: !include sonde-base.yaml
