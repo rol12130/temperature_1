@@ -7,7 +7,7 @@ esphome:
   friendly_name: ${name}
 
 esp32:
-  board: esp32-c3-devkitm-1
+  board: ${board}
   framework:
     type: esp-idf
 
@@ -39,7 +39,7 @@ time:
 
 one_wire:
   - platform: gpio
-    pin: GPIO4
+    pin: ${onewire_pin}
     id: bus_1wire
 
 sensor:

@@ -14,6 +14,13 @@ Elle publie la convention décidée le 2026-10-07 : `metrics/<site>/sonde-NN/<em
 
 Dans un environnement isolé, version figée : `esphome==2026.9.1`. Éviter le Python 3.14 de l'environnement ESP-IDF, dont la compatibilité avec ESPHome n'est pas vérifiée (préférer 3.12 ou 3.13, avec `uv tool` ou `pipx`).
 
+## Carte utilisée : C3 ou C6
+
+La carte et la broche 1-Wire sont des variables de `sonde-01.yaml` (`board`, `onewire_pin`). Les deux variantes passent la validation d'ESPHome (2026-10) :
+
+- **C3 SuperMini** (décision documentée) : `esp32-c3-devkitm-1`, `GPIO4`.
+- **C6** : `esp32-c6-devkitc-1`, avec une autre broche. À ma connaissance, GPIO4 est une broche de strapping sur le C6 ; à confirmer avec la fiche de la carte. Les notes de la fiche Capteur de température (diode sur VBUS, brochage, GPIO4 voisine du 3V3) concernent la SuperMini C3 et ne s'appliquent pas telles quelles.
+
 ## Le test
 
 1. Copier `secrets.yaml.example` en `secrets.yaml` et le remplir.
