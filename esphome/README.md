@@ -38,6 +38,10 @@ La carte et la broche 1-Wire sont des variables de `sonde-01.yaml` (`board`, `on
 - Les logs sont lisibles à distance (topic `logs/...` ou `esphome logs`).
 - La C3 tient le Wi-Fi 24 heures sans décrocher (point de vigilance noté dans la fiche Capteur de température).
 
+## Correction du 2026-10-10
+
+- `api: reboot_timeout: 0s` : par défaut, ESPHome redémarre la carte au bout de 15 minutes si aucun client ne se connecte à l'API native. Sans Home Assistant, la sonde aurait redémarré toutes les 15 minutes et le test de stabilité aurait été faussé. Revalidé avec 2026.9.1. La compilation complète reste à faire sur le Mac.
+
 ## Pas encore inclus
 
 - Heartbeat et version annoncée (uptime, version) : à ajouter si le test est concluant.

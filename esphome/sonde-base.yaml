@@ -15,6 +15,7 @@ logger:
   hardware_uart: USB_SERIAL_JTAG   # logs sur le port USB de la SuperMini
 
 api:
+  reboot_timeout: 0s   # sinon redémarrage toutes les 15 min faute de client API (pas de Home Assistant)
 
 ota:
   - platform: esphome
