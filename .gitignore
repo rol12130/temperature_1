@@ -3,5 +3,3 @@ sdkconfig
 sdkconfig.old
 managed_components/
 .vscode/
-esphome/secrets.yaml
-esphome/.esphome/
