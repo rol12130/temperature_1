@@ -7,9 +7,10 @@ plan de topics `metrics|logs|notifications|commands/<site>/<device>/...`,
 payloads JSON à plat via le même petit `json_helper`, double publication des
 metrics sur le broker local du site et le broker VPS.
 
-> **Alternative en test (2026-10)** : les mêmes sondes sous ESPHome, dans le dépôt
-> [sondes-esphome](https://github.com/rol12130/sondes-esphome) (configuration
-> d'abord placée dans le dossier `esphome/` de ce dépôt, déplacée le 2026-10-10).
+> **Plus développé pour les sondes (décision du 2026-10-11)** : les sondes de
+> température passent sous ESPHome, dépôt
+> [sondes-esphome](https://github.com/rol12130/sondes-esphome). Ce firmware C reste
+> ici comme référence.
 
 > 👉 **Pas à l'aise avec les suites de commandes terminal ?** Va directement
 > au [guide pas-à-pas](./GUIDE-PAS-A-PAS.md) — flasher en USB et faire une
